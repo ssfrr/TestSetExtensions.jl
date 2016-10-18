@@ -1,4 +1,4 @@
-module TestDots
+module DottedTestSets
 
 export DottedTestSet
 

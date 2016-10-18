@@ -1,4 +1,4 @@
-using TestDots
+using DottedTestSets
 using Suppressor
 
 if VERSION >= v"0.5.0-dev+7720"
