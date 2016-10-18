@@ -11,6 +11,9 @@
 This is a simple package to output green dots as your tests pass, so you can have a sense of progress. To use it, simply add `DottedTestSet` as a custom testset type. All nested testsets will use it as well:
 
 ```julia
+using Base.Test
+using DottedTestSets
+
 @testset DottedTestSet "top-level tests" begin
     @testset "2nd-level tests 1" begin
         @test true
