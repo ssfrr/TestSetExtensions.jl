@@ -1,6 +1,7 @@
 # TestSetExtensions
 
 [![Build Status](https://travis-ci.org/ssfrr/TestSetExtensions.jl.svg?branch=master)](https://travis-ci.org/ssfrr/TestSetExtensions.jl)
+[![Build status](https://ci.appveyor.com/api/projects/status/79m2ru7o3upt86ds/branch/master?svg=true)](https://ci.appveyor.com/project/ssfrr/testsetextensions-jl/branch/master)
 [![codecov.io](http://codecov.io/github/ssfrr/TestSetExtensions.jl/coverage.svg?branch=master)](http://codecov.io/github/ssfrr/TestSetExtensions.jl?branch=master)
 
 ![TestSetExtensions example gif](http://ssfrr.github.io/TestSetExtensions.jl/DottedTestSet.gif)
