@@ -57,23 +57,27 @@ eval(Base, :(have_color = $orig_color))
             """
     end
 
-  # @testset "Auto-run test files" begin
-  #   file1_run = false
-  #   file2_run = false
-  #
-  #   runtests()
-  #
-  #   @test file1_run
-  #   @test file2_run
-  # end
-  #
-  # @testset "run selected test files" begin
-  #   file1_run = false
-  #   file2_run = false
-  #
-  #   runtests(["file1"])
-  #
-  #   @test file1_run
-  #   @test !file2_run
-  # end
+    @testset "Auto-run test files" begin
+        global file1_run = false
+        global file2_run = false
+        global file3_run = false
+
+        @includetests
+
+        @test file1_run
+        @test file2_run
+        @test file3_run
+    end
+
+    @testset "run selected test files" begin
+        global file1_run = false
+        global file2_run = false
+        global file3_run = false
+
+        @includetests ["file1", "file3"]
+
+        @test file1_run
+        @test !file2_run
+        @test file3_run
+    end
 end
