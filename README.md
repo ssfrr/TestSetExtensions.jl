@@ -48,6 +48,6 @@ $ julia test/runtests.jl footests bartests
 
 Which will run `footests.jl` and `bartests.jl`.
 
-`@includetests` will print out each test module name as it goes:
+`@includetests` will print out each test module name as it goes (here in combination with `DottedTestSet`):
 
 ![includetests output](http://ssfrr.github.io/TestSetExtensions.jl/includetests.png)

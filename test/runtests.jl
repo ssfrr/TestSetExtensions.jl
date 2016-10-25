@@ -41,20 +41,8 @@ eval(Base, :(have_color = $orig_color))
 
 @testset DottedTestSet "TextSetExtensions Tests" begin
     @testset "check output" begin
-        @test output_color ==
-            """\e[1m\e[32m.\e[0m\e[1m\e[32m.\e[0m\e[1m\e[32m.\e[0m\e[1m\e[32m.\e[0m
-
-            \e[1m\e[37mTest Summary:   | \e[0m\e[1m\e[32mPass  \e[0m\e[1m\e[34mTotal\e[0m
-              top-level tests | \e[1m\e[32m   4  \e[0m\e[1m\e[34m    4\e[0m
-            """
-
-        @test output_nocolor ==
-            """
-            ....
-
-            Test Summary:   | Pass  Total
-              top-level tests |    4      4
-            """
+        @test split(output_color, '\n')[1] == "\e[1m\e[32m.\e[0m\e[1m\e[32m.\e[0m\e[1m\e[32m.\e[0m\e[1m\e[32m.\e[0m"
+        @test split(output_nocolor, '\n')[1] == "...."
     end
 
     @testset "Auto-run test files" begin
