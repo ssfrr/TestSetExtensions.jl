@@ -28,6 +28,7 @@ macro includetests(tests=[])
             tests = map(f->string(f, ".jl"), tests)
         end
         for test in tests
+            print("\n", splitext(test)[1], ": ")
             include(test)
         end
     end
