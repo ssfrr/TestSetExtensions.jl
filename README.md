@@ -6,7 +6,7 @@
 
 ![TestSetExtensions example gif](http://ssfrr.github.io/TestSetExtensions.jl/DottedTestSet.gif)
 
-This package collects some extensions and convenience utilities to maximize your testing enjoyment. It builds on the new `Base.Test` infrastructure in Julia v0.5 (also available in v0.4 with the `BaseTestNext` package).
+This package collects some extensions and convenience utilities to maximize your testing enjoyment. It builds on the new `Base.Test` infrastructure in Julia v0.5 (also available in v0.4 with the `BaseTestNext` package). It's designed so that you shouldn't need to modify your tests at all if you're already using `@testset` and `@test` - all the interactions with this package happen at the top-level of your tests.
 
 ## `DottedTestSet`
 
