@@ -68,4 +68,8 @@ eval(Base, :(have_color = $orig_color))
         @test !file2_run
         @test file3_run
     end
+
+    @testset "more than one arg to @includetests is an error" begin
+        @test_throws ErrorException (@includetests one two)
+    end
 end

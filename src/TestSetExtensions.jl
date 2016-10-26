@@ -23,7 +23,8 @@ macro includetests(testarg...)
     elseif length(testarg) == 1
         tests = testarg[1]
     else
-        error("@includetests takes zero or one argument")
+        # return the error expression so it's catchable
+        return :(error("@includetests takes zero or one argument"))
     end
 
     quote
@@ -35,9 +36,11 @@ macro includetests(testarg...)
         else
             tests = map(f->string(f, ".jl"), tests)
         end
+        println();
         for test in tests
-            print("\n", splitext(test)[1], ": ")
+            print(splitext(test)[1], ": ")
             include(test)
+            println()
         end
     end
 end
