@@ -23,8 +23,7 @@ macro includetests(testarg...)
     elseif length(testarg) == 1
         tests = testarg[1]
     else
-        # return the error expression so it's catchable
-        return :(error("@includetests takes zero or one argument"))
+        error("@includetests takes zero or one argument")
     end
 
     quote

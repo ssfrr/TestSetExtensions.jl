@@ -70,6 +70,7 @@ eval(Base, :(have_color = $orig_color))
     end
 
     @testset "more than one arg to @includetests is an error" begin
-        @test_throws ErrorException (@includetests one two)
+        ex = macroexpand(:(@includetests one two))
+        @test ex.head == :error
     end
 end
