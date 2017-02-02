@@ -41,7 +41,11 @@ eval(Base, :(have_color = $orig_color))
 
 @testset DottedTestSet "TextSetExtensions Tests" begin
     @testset "check output" begin
-        @test split(output_color, '\n')[1] == "\e[1m\e[32m.\e[0m\e[1m\e[32m.\e[0m\e[1m\e[32m.\e[0m\e[1m\e[32m.\e[0m"
+        if VERSION <= v"0.6.0-"
+            @test split(output_color, '\n')[1] == "\e[1m\e[32m.\e[0m\e[1m\e[32m.\e[0m\e[1m\e[32m.\e[0m\e[1m\e[32m.\e[0m"
+        else
+            @test split(output_color, '\n')[1] == "\e[32m.\e[39m\e[32m.\e[39m\e[32m.\e[39m\e[32m.\e[39m"
+        end
         @test split(output_nocolor, '\n')[1] == "...."
     end
 
