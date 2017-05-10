@@ -47,7 +47,7 @@ end
 type DottedTestSet{T<:AbstractTestSet} <: AbstractTestSet
     wrapped::T
 
-    DottedTestSet(desc) = new(T(desc))
+    DottedTestSet{T}(desc) where {T} = new(T(desc))
 end
 
 function DottedTestSet(desc; wrap=DefaultTestSet)
