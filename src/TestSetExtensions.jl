@@ -2,15 +2,13 @@ module TestSetExtensions
 
 export DottedTestSet, @includetests
 
-if VERSION >= v"0.5.0-dev+7720"
-    using Base.Test
-    import Base.Test: record, finish
-    using Base.Test: DefaultTestSet, AbstractTestSet, Pass, get_testset_depth
-else
-    using BaseTestNext
-    import BaseTestNext: record, finish
-    using BaseTestNext: DefaultTestSet, AbstractTestSet, Pass, get_testset_depth
-end
+using Base.Test
+import Base.Test: record, finish
+using Base.Test: DefaultTestSet, AbstractTestSet
+using Base.Test: get_testset_depth, scrub_backtrace
+using Base.Test: Result, Pass, Fail
+
+using DeepDiffs
 
 """
 Includes the given test files, given as a list without their ".jl" extensions.
@@ -44,14 +42,46 @@ macro includetests(testarg...)
     end
 end
 
-type DottedTestSet{T<:AbstractTestSet} <: AbstractTestSet
+struct DottedTestSet{T<:AbstractTestSet} <: AbstractTestSet
     wrapped::T
 
     DottedTestSet{T}(desc) where {T} = new(T(desc))
 end
 
+struct FailDiff <: Result
+    result::Fail
+end
+
 function DottedTestSet(desc; wrap=DefaultTestSet)
     DottedTestSet{wrap}(desc)
+end
+
+function record(ts::DottedTestSet, res::Fail)
+    if myid() == 1
+        print_with_color(:white, ts.wrapped.description, ": ")
+        if res.test_type == :test && isa(res.data,Expr) && res.data.head == :comparison
+            dd = deepdiff(res.data.args[1], res.data.args[3])
+            if !isa(dd, DeepDiffs.SimpleDiff)
+                # The test was an comparison between things we can diff,
+                # so display the diff
+                print_with_color(Base.error_color(), "Test Failed\n"; bold = true)
+                print("  Expression: ", res.orig_expr)
+                println("\nDiff:")
+                display(dd)
+                println()
+            else
+                # fallback to the default printing if we don't have a pretty diff
+                print(res)
+            end
+        else
+            # fallback to the default printing for non-comparisons
+            print(res)
+        end
+        Base.show_backtrace(STDOUT, scrub_backtrace(backtrace()))
+        println()
+    end
+    push!(ts.wrapped.results, res)
+    res, backtrace()
 end
 
 function record(ts::DottedTestSet, res::Pass)
