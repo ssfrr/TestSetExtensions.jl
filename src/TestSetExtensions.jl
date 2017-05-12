@@ -6,7 +6,7 @@ using Base.Test
 import Base.Test: record, finish
 using Base.Test: DefaultTestSet, AbstractTestSet
 using Base.Test: get_testset_depth, scrub_backtrace
-using Base.Test: Result, Pass, Fail
+using Base.Test: Result, Pass, Fail, Error
 
 using DeepDiffs
 
@@ -58,6 +58,7 @@ end
 
 function record(ts::DottedTestSet, res::Fail)
     if myid() == 1
+        println("\n=====================================================")
         print_with_color(:white, ts.wrapped.description, ": ")
         if res.test_type == :test && isa(res.data,Expr) && res.data.head == :comparison
             dd = deepdiff(res.data.args[1], res.data.args[3])
@@ -78,10 +79,17 @@ function record(ts::DottedTestSet, res::Fail)
             print(res)
         end
         Base.show_backtrace(STDOUT, scrub_backtrace(backtrace()))
-        println()
+        # show_backtrace doesn't print a trailing newline
+        println("\n=====================================================")
     end
     push!(ts.wrapped.results, res)
     res, backtrace()
+end
+
+function record(ts::DottedTestSet, res::Error)
+    println("\n=====================================================")
+    record(ts.wrapped, res)
+    print("=====================================================\n")
 end
 
 function record(ts::DottedTestSet, res::Pass)
