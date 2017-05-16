@@ -1,17 +1,13 @@
 using TestSetExtensions
 using Suppressor
 
-if VERSION >= v"0.5.0-dev+7720"
-    using Base.Test
-else
-    using BaseTestNext
-end
+using Base.Test
 
 orig_color = Base.have_color
 
 eval(Base, :(have_color = true))
 output_color = @capture_out begin
-    @testset DottedTestSet "top-level tests" begin
+    @testset ExtendedTestSet "top-level tests" begin
         @testset "2nd-level tests 1" begin
             @test true
             @test 1 == 1
@@ -25,7 +21,7 @@ end
 
 eval(Base, :(have_color = false))
 output_nocolor = @capture_out begin
-    @testset DottedTestSet "top-level tests" begin
+    @testset ExtendedTestSet "top-level tests" begin
         @testset "2nd-level tests 1" begin
             @test true
             @test 1 == 1
@@ -39,7 +35,7 @@ end
 
 eval(Base, :(have_color = $orig_color))
 
-@testset DottedTestSet "TextSetExtensions Tests" begin
+@testset ExtendedTestSet "TextSetExtensions Tests" begin
     @testset "check output" begin
         if VERSION <= v"0.6.0-"
             @test split(output_color, '\n')[1] == "\e[1m\e[32m.\e[0m\e[1m\e[32m.\e[0m\e[1m\e[32m.\e[0m\e[1m\e[32m.\e[0m"
@@ -48,6 +44,14 @@ eval(Base, :(have_color = $orig_color))
         end
         @test split(output_nocolor, '\n')[1] == "...."
     end
+
+
+    @testset "DottedTestSet is deprecated" begin
+        @test_warn "DottedTestSet is deprecated, use ExtendedTestSet instead." @testset DottedTestSet "testing" begin
+            @test true
+        end
+    end
+
 
     @testset "Auto-run test files" begin
         global file1_run = false

@@ -1,12 +1,15 @@
 module TestSetExtensions
 
-export DottedTestSet, @includetests
+export ExtendedTestSet, @includetests
 
 using Base.Test
 import Base.Test: record, finish
 using Base.Test: DefaultTestSet, AbstractTestSet
 using Base.Test: get_testset_depth, scrub_backtrace
 using Base.Test: Result, Pass, Fail, Error
+
+using Base: @deprecate
+@deprecate DottedTestSet ExtendedTestSet
 
 using DeepDiffs
 
@@ -42,21 +45,21 @@ macro includetests(testarg...)
     end
 end
 
-struct DottedTestSet{T<:AbstractTestSet} <: AbstractTestSet
+struct ExtendedTestSet{T<:AbstractTestSet} <: AbstractTestSet
     wrapped::T
 
-    DottedTestSet{T}(desc) where {T} = new(T(desc))
+    ExtendedTestSet{T}(desc) where {T} = new(T(desc))
 end
 
 struct FailDiff <: Result
     result::Fail
 end
 
-function DottedTestSet(desc; wrap=DefaultTestSet)
-    DottedTestSet{wrap}(desc)
+function ExtendedTestSet(desc; wrap=DefaultTestSet)
+    ExtendedTestSet{wrap}(desc)
 end
 
-function record(ts::DottedTestSet, res::Fail)
+function record(ts::ExtendedTestSet, res::Fail)
     if myid() == 1
         println("\n=====================================================")
         print_with_color(:white, ts.wrapped.description, ": ")
@@ -86,21 +89,21 @@ function record(ts::DottedTestSet, res::Fail)
     res, backtrace()
 end
 
-function record(ts::DottedTestSet, res::Error)
+function record(ts::ExtendedTestSet, res::Error)
     println("\n=====================================================")
     record(ts.wrapped, res)
     print("=====================================================\n")
 end
 
-function record(ts::DottedTestSet, res::Pass)
+function record(ts::ExtendedTestSet, res::Pass)
     print_with_color(:green, ".")
     record(ts.wrapped, res)
     res
 end
 
-record(ts::DottedTestSet, res) = record(ts.wrapped, res)
+record(ts::ExtendedTestSet, res) = record(ts.wrapped, res)
 
-function finish(ts::DottedTestSet)
+function finish(ts::ExtendedTestSet)
     get_testset_depth() == 0 && print("\n\n")
     finish(ts.wrapped)
 end
