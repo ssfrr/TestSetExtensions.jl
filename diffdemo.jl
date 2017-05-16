@@ -1,7 +1,7 @@
 using Base.Test
 using TestSetExtensions
 
-@testset "Nice Diffs" begin
+@testset ExtendedTestSet "Nice Diffs" begin
     @test [3, 5, 6, 1, 6, 8] == [3, 5, 6, 1, 9, 8]
     @test """Lorem ipsum dolor sit amet,
              consectetur adipiscing elit, sed do
