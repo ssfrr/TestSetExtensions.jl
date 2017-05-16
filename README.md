@@ -28,6 +28,10 @@ using TestSetExtensions
 end
 ```
 
+### Diff output example
+
+![After diff output](http://ssfrr.github.io/TestSetExtensions.jl/diff_after.png)
+
 ## `@includetests`
 TestSetExtensions also provides a `@includetests` macro that makes it easy to selectively run your tests, for cases when your full test suite is large and you only need to run a subset of your tests to test a feature you're working on. The macro takes a list of test files, so you can pass it `ARGS` to allow the user to specify which tests to run from the command line.
 
