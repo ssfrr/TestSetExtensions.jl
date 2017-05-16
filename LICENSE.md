@@ -1,4 +1,4 @@
-The DottedTestSets.jl package is licensed under the MIT "Expat" License:
+The TestSetExtensions.jl package is licensed under the MIT "Expat" License:
 
 > Copyright (c) 2016: Spencer Russell.
 >
