@@ -69,8 +69,8 @@ function record(ts::ExtendedTestSet, res::Fail)
                 # The test was an comparison between things we can diff,
                 # so display the diff
                 print_with_color(Base.error_color(), "Test Failed\n"; bold = true)
-                print("  Expression: ", res.orig_expr)
-                println("\nDiff:")
+                println("  Expression: ", res.orig_expr)
+                print_with_color(Base.info_color(), "\nDiff:\n")
                 display(dd)
                 println()
             else
