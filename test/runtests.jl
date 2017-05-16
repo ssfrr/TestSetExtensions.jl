@@ -35,6 +35,31 @@ end
 
 eval(Base, :(have_color = $orig_color))
 
+
+try
+    info("You should see 3 failing tests with pretty diffs...")
+    include(joinpath("..", "diffdemo.jl"))
+catch
+end
+try
+    info("These 4 failing tests don't have pretty diffs to display")
+    @testset ExtendedTestSet "not-pretty" begin
+        @testset "No pretty diff for matrices" begin
+            @test [1 2; 3 4] == [1 4; 3 4]
+        end
+        @testset "don't diff non-equality" begin
+            @test 1 > 2
+        end
+        @testset "don't diff non-comparisons" begin
+            @test iseven(7)
+        end
+        @testset "errors don't have diffs either" begin
+            throw(ErrorException("This test is supposed to throw an error"))
+        end
+    end
+catch
+end
+
 @testset ExtendedTestSet "TextSetExtensions Tests" begin
     @testset "check output" begin
         if VERSION <= v"0.6.0-"
