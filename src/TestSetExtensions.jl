@@ -1,16 +1,17 @@
 module TestSetExtensions
 
-export DottedTestSet, @includetests
+export ExtendedTestSet, @includetests
 
-if VERSION >= v"0.5.0-dev+7720"
-    using Base.Test
-    import Base.Test: record, finish
-    using Base.Test: DefaultTestSet, AbstractTestSet, Pass, get_testset_depth
-else
-    using BaseTestNext
-    import BaseTestNext: record, finish
-    using BaseTestNext: DefaultTestSet, AbstractTestSet, Pass, get_testset_depth
-end
+using Base.Test
+import Base.Test: record, finish
+using Base.Test: DefaultTestSet, AbstractTestSet
+using Base.Test: get_testset_depth, scrub_backtrace
+using Base.Test: Result, Pass, Fail, Error
+
+using Base: @deprecate
+@deprecate DottedTestSet ExtendedTestSet
+
+using DeepDiffs
 
 """
 Includes the given test files, given as a list without their ".jl" extensions.
@@ -44,25 +45,65 @@ macro includetests(testarg...)
     end
 end
 
-type DottedTestSet{T<:AbstractTestSet} <: AbstractTestSet
+struct ExtendedTestSet{T<:AbstractTestSet} <: AbstractTestSet
     wrapped::T
 
-    DottedTestSet(desc) = new(T(desc))
+    ExtendedTestSet{T}(desc) where {T} = new(T(desc))
 end
 
-function DottedTestSet(desc; wrap=DefaultTestSet)
-    DottedTestSet{wrap}(desc)
+struct FailDiff <: Result
+    result::Fail
 end
 
-function record(ts::DottedTestSet, res::Pass)
+function ExtendedTestSet(desc; wrap=DefaultTestSet)
+    ExtendedTestSet{wrap}(desc)
+end
+
+function record(ts::ExtendedTestSet, res::Fail)
+    if myid() == 1
+        println("\n=====================================================")
+        print_with_color(:white, ts.wrapped.description, ": ")
+        if res.test_type == :test && isa(res.data,Expr) && res.data.head == :comparison
+            dd = deepdiff(res.data.args[1], res.data.args[3])
+            if !isa(dd, DeepDiffs.SimpleDiff)
+                # The test was an comparison between things we can diff,
+                # so display the diff
+                print_with_color(Base.error_color(), "Test Failed\n"; bold = true)
+                println("  Expression: ", res.orig_expr)
+                print_with_color(Base.info_color(), "\nDiff:\n")
+                display(dd)
+                println()
+            else
+                # fallback to the default printing if we don't have a pretty diff
+                print(res)
+            end
+        else
+            # fallback to the default printing for non-comparisons
+            print(res)
+        end
+        Base.show_backtrace(STDOUT, scrub_backtrace(backtrace()))
+        # show_backtrace doesn't print a trailing newline
+        println("\n=====================================================")
+    end
+    push!(ts.wrapped.results, res)
+    res, backtrace()
+end
+
+function record(ts::ExtendedTestSet, res::Error)
+    println("\n=====================================================")
+    record(ts.wrapped, res)
+    print("=====================================================\n")
+end
+
+function record(ts::ExtendedTestSet, res::Pass)
     print_with_color(:green, ".")
     record(ts.wrapped, res)
     res
 end
 
-record(ts::DottedTestSet, res) = record(ts.wrapped, res)
+record(ts::ExtendedTestSet, res) = record(ts.wrapped, res)
 
-function finish(ts::DottedTestSet)
+function finish(ts::ExtendedTestSet)
     get_testset_depth() == 0 && print("\n\n")
     finish(ts.wrapped)
 end
