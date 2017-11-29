@@ -1,7 +1,7 @@
 using TestSetExtensions
 using Suppressor
 
-using Base.Test
+using Compat.Test
 
 orig_color = Base.have_color
 

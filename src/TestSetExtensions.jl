@@ -2,11 +2,11 @@ module TestSetExtensions
 
 export ExtendedTestSet, @includetests
 
-using Base.Test
-import Base.Test: record, finish
-using Base.Test: DefaultTestSet, AbstractTestSet
-using Base.Test: get_testset_depth, scrub_backtrace
-using Base.Test: Result, Pass, Fail, Error
+using Compat.Test
+import Compat.Test: record, finish
+using Compat.Test: DefaultTestSet, AbstractTestSet
+using Compat.Test: get_testset_depth, scrub_backtrace
+using Compat.Test: Result, Pass, Fail, Error
 
 using Base: @deprecate
 @deprecate DottedTestSet ExtendedTestSet
