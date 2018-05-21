@@ -1,6 +1,7 @@
 using TestSetExtensions
 using Suppressor
 
+using Compat
 using Compat.Test
 
 orig_color = Base.have_color
@@ -37,12 +38,12 @@ eval(Base, :(have_color = $orig_color))
 
 
 try
-    info("You should see 3 failing tests with pretty diffs...")
+    Compat.@info("You should see 3 failing tests with pretty diffs...")
     include(joinpath("..", "diffdemo.jl"))
 catch
 end
 try
-    info("These 4 failing tests don't have pretty diffs to display")
+    Compat.@info("These 4 failing tests don't have pretty diffs to display")
     @testset ExtendedTestSet "not-pretty" begin
         @testset "No pretty diff for matrices" begin
             @test [1 2; 3 4] == [1 4; 3 4]

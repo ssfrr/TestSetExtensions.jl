@@ -2,16 +2,17 @@ module TestSetExtensions
 
 export ExtendedTestSet, @includetests
 
-using Compat.Test
-import Compat.Test: record, finish
-using Compat.Test: DefaultTestSet, AbstractTestSet
-using Compat.Test: get_testset_depth, scrub_backtrace
-using Compat.Test: Result, Pass, Fail, Error
-
-using Base: @deprecate
-@deprecate DottedTestSet ExtendedTestSet
-
 using DeepDiffs
+
+using Compat
+using Compat.Distributed
+using Compat.Test
+using Compat.Test: DefaultTestSet, AbstractTestSet,
+                   get_testset_depth, scrub_backtrace,
+                   Result, Pass, Fail, Error
+import Compat.Test: record, finish
+
+Base.@deprecate_binding DottedTestSet ExtendedTestSet
 
 """
 Includes the given test files, given as a list without their ".jl" extensions.
@@ -32,11 +33,11 @@ macro includetests(testarg...)
         rootfile = @__FILE__
         if length(tests) == 0
             tests = readdir(dirname(rootfile))
-            tests = filter(f->endswith(f, ".jl") && f!= basename(rootfile), tests)
+            tests = filter(f->endswith(f, ".jl") && f != basename(rootfile), tests)
         else
             tests = map(f->string(f, ".jl"), tests)
         end
-        println();
+        println()
         for test in tests
             print(splitext(test)[1], ": ")
             include(test)
@@ -62,15 +63,15 @@ end
 function record(ts::ExtendedTestSet, res::Fail)
     if myid() == 1
         println("\n=====================================================")
-        print_with_color(:white, ts.wrapped.description, ": ")
+        printstyled(ts.wrapped.description, ": ", color=:white)
         if res.test_type == :test && isa(res.data,Expr) && res.data.head == :comparison
             dd = deepdiff(res.data.args[1], res.data.args[3])
             if !isa(dd, DeepDiffs.SimpleDiff)
                 # The test was an comparison between things we can diff,
                 # so display the diff
-                print_with_color(Base.error_color(), "Test Failed\n"; bold = true)
+                printstyled("Test Failed\n", bold=true, color=Base.error_color())
                 println("  Expression: ", res.orig_expr)
-                print_with_color(Base.info_color(), "\nDiff:\n")
+                printstyled("\nDiff:\n", color=Base.info_color())
                 display(dd)
                 println()
             else
@@ -81,7 +82,7 @@ function record(ts::ExtendedTestSet, res::Fail)
             # fallback to the default printing for non-comparisons
             print(res)
         end
-        Base.show_backtrace(STDOUT, scrub_backtrace(backtrace()))
+        Base.show_backtrace(stdout, scrub_backtrace(backtrace()))
         # show_backtrace doesn't print a trailing newline
         println("\n=====================================================")
     end
@@ -96,7 +97,7 @@ function record(ts::ExtendedTestSet, res::Error)
 end
 
 function record(ts::ExtendedTestSet, res::Pass)
-    print_with_color(:green, ".")
+    printstyled(".", color=:green)
     record(ts.wrapped, res)
     res
 end
