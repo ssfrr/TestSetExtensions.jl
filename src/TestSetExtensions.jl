@@ -68,9 +68,9 @@ function record(ts::ExtendedTestSet, res::Fail)
             if !isa(dd, DeepDiffs.SimpleDiff)
                 # The test was an comparison between things we can diff,
                 # so display the diff
-                print_with_color(Base.error_color(), "Test Failed\n"; bold = true)
+                print("Test Failed\n"; bold = true)
                 println("  Expression: ", res.orig_expr)
-                print_with_color(Base.info_color(), "\nDiff:\n")
+                print("\nDiff:\n")
                 display(dd)
                 println()
             else
@@ -96,7 +96,7 @@ function record(ts::ExtendedTestSet, res::Error)
 end
 
 function record(ts::ExtendedTestSet, res::Pass)
-    print_with_color(:green, ".")
+    print( ".")
     record(ts.wrapped, res)
     res
 end
