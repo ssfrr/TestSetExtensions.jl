@@ -1,8 +1,8 @@
 module TestSetExtensions
 
 using Distributed, Test, DeepDiffs
-import Test: AbstractTestSet, DefaultTestSet
-import Test: Result, Fail, Error, Pass
+using Test: AbstractTestSet, DefaultTestSet
+using Test: Result, Fail, Error, Pass
 export ExtendedTestSet, @includetests
 
 """
