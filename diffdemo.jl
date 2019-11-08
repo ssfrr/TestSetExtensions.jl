@@ -1,4 +1,4 @@
-using Compat.Test
+using Test
 using TestSetExtensions
 
 @testset ExtendedTestSet "Nice Diffs" begin

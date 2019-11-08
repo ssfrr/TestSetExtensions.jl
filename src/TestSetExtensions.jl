@@ -1,17 +1,9 @@
 module TestSetExtensions
 
+using Distributed, Test, DeepDiffs
+import Test: AbstractTestSet, DefaultTestSet
+import Test: Result, Fail, Error, Pass
 export ExtendedTestSet, @includetests
-
-using Compat.Test
-import Compat.Test: record, finish
-using Compat.Test: DefaultTestSet, AbstractTestSet
-using Compat.Test: get_testset_depth, scrub_backtrace
-using Compat.Test: Result, Pass, Fail, Error
-
-using Base: @deprecate
-@deprecate DottedTestSet ExtendedTestSet
-
-using DeepDiffs
 
 """
 Includes the given test files, given as a list without their ".jl" extensions.
@@ -59,29 +51,51 @@ function ExtendedTestSet(desc; wrap=DefaultTestSet)
     ExtendedTestSet{wrap}(desc)
 end
 
-function record(ts::ExtendedTestSet, res::Fail)
-    if myid() == 1
+function Test.record(ts::ExtendedTestSet{T}, res::Fail) where {T}
+    if Distributed.myid() == 1
         println("\n=====================================================")
-        print_with_color(:white, ts.wrapped.description, ": ")
-        if res.test_type == :test && isa(res.data,Expr) && res.data.head == :comparison
-            dd = deepdiff(res.data.args[1], res.data.args[3])
-            if !isa(dd, DeepDiffs.SimpleDiff)
-                # The test was an comparison between things we can diff,
-                # so display the diff
-                print_with_color(Base.error_color(), "Test Failed\n"; bold = true)
-                println("  Expression: ", res.orig_expr)
-                print_with_color(Base.info_color(), "\nDiff:\n")
-                display(dd)
-                println()
-            else
-                # fallback to the default printing if we don't have a pretty diff
+        printstyled(ts.wrapped.description, ": "; color = :white)
+
+        if res.test_type === :test
+            try
+                test_expr = if isa(res.data, Expr)
+                    res.data
+                elseif isa(res.data, String)
+                    Meta.parse(res.data)
+                end
+
+                if test_expr.head === :call && test_expr.args[1] === Symbol("==")
+                    dd = if isa(test_expr.args[2], String) && isa(test_expr.args[3], String)
+                        deepdiff(test_expr.args[2], test_expr.args[3])
+                    elseif test_expr.args[2].head === :vect && test_expr.args[3].head === :vect
+                        deepdiff(test_expr.args[2].args, test_expr.args[3].args)
+                    elseif test_expr.args[2].head === :call && test_expr.args[3].head === :call &&
+                            test_expr.args[2].args[1].head === :curly && test_expr.args[3].args[1].head === :curly
+                        deepdiff(Base.eval(test_expr.args[2].args), Base.eval(test_expr.args[3].args))
+                    end
+
+                    if ! isa(dd, DeepDiffs.SimpleDiff)
+                        # The test was an comparison between things we can diff,
+                        # so display the diff
+                        printstyled("Test Failed\n"; bold = true, color = Base.error_color())
+                        println("  Expression: ", res.orig_expr)
+                        printstyled("\nDiff:\n"; color = Base.info_color())
+                        display(dd)
+                        println()
+                    else
+                        # fallback to the default printing if we don't have a pretty diff
+                        print(res)
+                    end
+                end
+            catch ex
                 print(res)
             end
         else
             # fallback to the default printing for non-comparisons
             print(res)
         end
-        Base.show_backtrace(STDOUT, scrub_backtrace(backtrace()))
+
+        Base.show_backtrace(stdout, Test.scrub_backtrace(backtrace()))
         # show_backtrace doesn't print a trailing newline
         println("\n=====================================================")
     end
@@ -89,23 +103,23 @@ function record(ts::ExtendedTestSet, res::Fail)
     res, backtrace()
 end
 
-function record(ts::ExtendedTestSet, res::Error)
+function Test.record(ts::ExtendedTestSet{T}, res::Error) where {T}
     println("\n=====================================================")
-    record(ts.wrapped, res)
+    Test.record(ts.wrapped, res)
     print("=====================================================\n")
 end
 
-function record(ts::ExtendedTestSet, res::Pass)
-    print_with_color(:green, ".")
-    record(ts.wrapped, res)
+function Test.record(ts::ExtendedTestSet{T}, res::Pass) where {T}
+    printstyled("."; color = :green)
+    Test.record(ts.wrapped, res)
     res
 end
 
-record(ts::ExtendedTestSet, res) = record(ts.wrapped, res)
+Test.record(ts::ExtendedTestSet{T}, res) where {T} = Test.record(ts.wrapped, res)
 
-function finish(ts::ExtendedTestSet)
-    get_testset_depth() == 0 && print("\n\n")
-    finish(ts.wrapped)
+function Test.finish(ts::ExtendedTestSet{T}) where {T}
+    Test.get_testset_depth() == 0 && print("\n\n")
+    Test.finish(ts.wrapped)
 end
 
 end # module
