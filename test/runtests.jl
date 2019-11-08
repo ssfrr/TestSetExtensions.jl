@@ -1,14 +1,8 @@
-using Pkg
-pkg"activate .."
-
 using Test, TestSetExtensions
 using Logging
 using Suppressor
 
-orig_color = Base.have_color
-
-Base.eval(Base, :(have_color = true))
-output_color = @capture_out begin
+output = @capture_out begin
     @testset ExtendedTestSet "top-level tests" begin
         @testset "2nd-level tests 1" begin
             @test true
@@ -20,23 +14,6 @@ output_color = @capture_out begin
         end
     end
 end
-
-Base.eval(Base, :(have_color = false))
-output_nocolor = @capture_out begin
-    @testset ExtendedTestSet "top-level tests" begin
-        @testset "2nd-level tests 1" begin
-            @test true
-            @test 1 == 1
-        end
-        @testset "2nd-level tests 2" begin
-            @test true
-            @test 1 == 1
-        end
-    end
-end
-
-Base.eval(Base, :(have_color = $orig_color))
-
 
 try
     @info "You should see 3 failing tests with pretty diffs..."
@@ -63,18 +40,9 @@ catch
 end
 
 @testset ExtendedTestSet "TextSetExtensions Tests" begin
-    @testset "check output" begin
-        @test split(output_color, '\n')[1] == "\e[32m.\e[39m\e[32m.\e[39m\e[32m.\e[39m\e[32m.\e[39m"
-        @test split(output_nocolor, '\n')[1] == "...."
+    @testset "check output dots" begin
+        @test split(output, '\n')[1] == "...."
     end
-
-
-    @testset "DottedTestSet is deprecated" begin
-        @test_warn "DottedTestSet is deprecated, use ExtendedTestSet instead." @testset DottedTestSet "testing" begin
-            @test true
-        end
-    end
-
 
     @testset "Auto-run test files" begin
         global file1_run = false
@@ -101,7 +69,6 @@ end
     end
 
     @testset "more than one arg to @includetests is an error" begin
-        ex = macroexpand(@__MODULE__, :(@includetests one two))
-        @test ex.head == :error
+        @test_throws LoadError macroexpand(@__MODULE__, :(@includetests one two))
     end
 end
