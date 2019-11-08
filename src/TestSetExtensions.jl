@@ -19,19 +19,25 @@ macro includetests(testarg...)
         error("@includetests takes zero or one argument")
     end
 
+    rootfile = "$(__source__.file)"
+    mod = __module__
+
     quote
         tests = $tests
-        rootfile = @__FILE__
+        rootfile = $rootfile
+
         if length(tests) == 0
             tests = readdir(dirname(rootfile))
             tests = filter(f->endswith(f, ".jl") && f!= basename(rootfile), tests)
         else
             tests = map(f->string(f, ".jl"), tests)
         end
+
         println();
+
         for test in tests
             print(splitext(test)[1], ": ")
-            include(test)
+            Base.include($mod, test)
             println()
         end
     end
