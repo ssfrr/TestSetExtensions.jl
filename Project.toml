@@ -6,11 +6,14 @@ version = "2.0.0"
 [deps]
 DeepDiffs = "ab62b9b5-e342-54a8-a765-a90f495de1a6"
 Distributed = "8ba89e20-285c-5b6f-9357-94700520ee1b"
-Suppressor = "fd094767-a336-5f1f-9728-57cf17d0bbfb"
-Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [compat]
 julia = "1"
 
+[extras]
+Suppressor = "fd094767-a336-5f1f-9728-57cf17d0bbfb"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+Logging = "56ddb016-857b-54e1-b83d-db4d58db5568"
+
 [targets]
-test = ["Suppressor"]
+test = ["Suppressor", "Test", "Logging"]
