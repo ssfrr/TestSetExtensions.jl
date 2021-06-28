@@ -71,14 +71,7 @@ function Test.record(ts::ExtendedTestSet{T}, res::Fail) where {T}
                 end
 
                 if test_expr.head === :call && test_expr.args[1] === Symbol("==")
-                    dd = if isa(test_expr.args[2], String) && isa(test_expr.args[3], String)
-                        deepdiff(test_expr.args[2], test_expr.args[3])
-                    elseif test_expr.args[2].head === :vect && test_expr.args[3].head === :vect
-                        deepdiff(test_expr.args[2].args, test_expr.args[3].args)
-                    elseif test_expr.args[2].head === :call && test_expr.args[3].head === :call &&
-                            test_expr.args[2].args[1].head === :curly && test_expr.args[3].args[1].head === :curly
-                        deepdiff(Base.eval(test_expr.args[2].args), Base.eval(test_expr.args[3].args))
-                    end
+                    dd = deepdiff(Base.eval(test_expr.args[2]), Base.eval(test_expr.args[3]))
 
                     if ! isa(dd, DeepDiffs.SimpleDiff)
                         # The test was an comparison between things we can diff,
