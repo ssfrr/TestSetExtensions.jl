@@ -72,3 +72,46 @@ end
         @test_throws LoadError macroexpand(@__MODULE__, :(@includetests one two))
     end
 end
+
+@info "ExtendedTestSet{FallbackTestSet} test sets should exit when the first test fails"
+@testset "ExtendedTestSet{FallbackTestSet} Tests" begin
+    ets_fallback = ExtendedTestSet{Test.FallbackTestSet}
+
+    # Single-level test set
+    fast_fail_succeeded = false
+    try
+        @testset ets_fallback "top-level tests" begin
+            @test 1 == 2
+            @test 1 == 1
+        end
+    catch err
+        if err isa TestSetExtensions.ExtendedTestSetException
+            if err.msg == "FallbackTestSetException occurred"
+                fast_fail_succeeded = true
+            end
+        end
+    end
+
+    @test fast_fail_succeeded
+
+    # Nested test sets
+    fast_fail_succeeded = false
+    try
+        @testset ets_fallback "top-level tests" begin
+            @testset "Failing test" begin
+                @test 1 == 2
+            end
+            @testset "Passing test" begin
+                @test 1 == 1
+            end
+        end
+    catch err
+        if err isa TestSetExtensions.ExtendedTestSetException
+            if err.msg == "FallbackTestSetException occurred"
+                fast_fail_succeeded = true
+            end
+        end
+    end
+
+    @test fast_fail_succeeded
+end
