@@ -1,7 +1,7 @@
 module TestSetExtensions
 
 using Distributed, Test, DeepDiffs
-using Test: AbstractTestSet, DefaultTestSet
+using Test: AbstractTestSet, DefaultTestSet, FallbackTestSet
 using Test: Result, Fail, Error, Pass
 export ExtendedTestSet, @includetests
 
@@ -47,10 +47,15 @@ struct ExtendedTestSet{T<:AbstractTestSet} <: AbstractTestSet
     wrapped::T
 
     ExtendedTestSet{T}(desc) where {T} = new(T(desc))
+    ExtendedTestSet{FallbackTestSet}(desc) = new(FallbackTestSet())
 end
 
 struct FailDiff <: Result
     result::Fail
+end
+
+struct ExtendedTestSetException <: Exception
+    msg::AbstractString
 end
 
 function ExtendedTestSet(desc; wrap=DefaultTestSet)
@@ -58,6 +63,12 @@ function ExtendedTestSet(desc; wrap=DefaultTestSet)
 end
 
 function Test.record(ts::ExtendedTestSet{T}, res::Fail) where {T}
+    println("\n=====================================================")
+    Test.record(ts.wrapped, res)
+    print("=====================================================\n")
+end
+
+function Test.record(ts::ExtendedTestSet{DefaultTestSet}, res::Fail)
     if Distributed.myid() == 1
         println("\n=====================================================")
         printstyled(ts.wrapped.description, ": "; color = :white)
@@ -110,6 +121,13 @@ function Test.record(ts::ExtendedTestSet{T}, res::Fail) where {T}
 end
 
 function Test.record(ts::ExtendedTestSet{T}, res::Error) where {T}
+    # Ignore errors generated from failed FallbackTestSet
+    if occursin(r"^Test.FallbackTestSetException", res.value) ||
+           (occursin(r"^TestSetExtensions.ExtendedTestSetException", res.value) &&
+            occursin("FallbackTestSetException occurred", res.value))
+        throw(ExtendedTestSetException("FallbackTestSetException occurred"))
+    end
+
     println("\n=====================================================")
     Test.record(ts.wrapped, res)
     print("=====================================================\n")
