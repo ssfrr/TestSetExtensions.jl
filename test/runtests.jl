@@ -78,7 +78,7 @@ end
     ets_fallback = ExtendedTestSet{Test.FallbackTestSet}
 
     # Single-level test set
-    failfast_succeeded = false
+    fail_fast_succeeded = false
     try
         @testset ets_fallback "top-level tests" begin
             @test 1 == 2
@@ -87,15 +87,15 @@ end
     catch err
         if err isa TestSetExtensions.ExtendedTestSetException
             if err.msg == "FallbackTestSetException occurred"
-                failfast_succeeded = true
+                fail_fast_succeeded = true
             end
         end
     end
 
-    @test failfast_succeeded
+    @test fail_fast_succeeded
 
     # Nested test sets
-    failfast_succeeded = false
+    fail_fast_succeeded = false
     try
         @testset ets_fallback "top-level tests" begin
             @testset "Failing test" begin
@@ -108,10 +108,10 @@ end
     catch err
         if err isa TestSetExtensions.ExtendedTestSetException
             if err.msg == "FallbackTestSetException occurred"
-                failfast_succeeded = true
+                fail_fast_succeeded = true
             end
         end
     end
 
-    @test failfast_succeeded
+    @test fail_fast_succeeded
 end
