@@ -39,7 +39,7 @@ try
 catch
 end
 
-@testset ExtendedTestSet "TextSetExtensions Tests" begin
+@testset ExtendedTestSet "TestSetExtensions Tests" begin
     @testset "check output dots" begin
         @test split(output, '\n')[1] == "...."
     end
