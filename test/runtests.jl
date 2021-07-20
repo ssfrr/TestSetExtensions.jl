@@ -148,7 +148,8 @@ end
     catch err
     end
 
-    @test isnothing(err)
+    @test err === nothing  # Note: isnothing() is not used for backward compatibility
+                           # with Julia 1.0
 
     # ------ DefaultTest nested under multiple ExtendedTestSet{FallbackTestSet} test sets
 
@@ -186,5 +187,7 @@ end
     catch err
     end
 
-    @test isnothing(err)
+    @test err === nothing  # Note: isnothing() is not used for backward compatibility
+                           # with Julia 1.0
+
 end
