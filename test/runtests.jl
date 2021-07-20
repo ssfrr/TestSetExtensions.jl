@@ -78,40 +78,73 @@ end
     ets_fallback = ExtendedTestSet{Test.FallbackTestSet}
 
     # Single-level test set
-    fail_fast_succeeded = false
+    err = nothing
     try
         @testset ets_fallback "top-level tests" begin
             @test 1 == 2
             @test 1 == 1
         end
     catch err
-        if err isa TestSetExtensions.ExtendedTestSetException
-            if err.msg == "FallbackTestSetException occurred"
-                fail_fast_succeeded = true
-            end
-        end
     end
 
-    @test fail_fast_succeeded
+    @test err isa TestSetExtensions.ExtendedTestSetException
+    @test err.msg == "FallbackTestSetException occurred"
 
     # Nested test sets
-    fail_fast_succeeded = false
+    err = nothing
     try
         @testset ets_fallback "top-level tests" begin
-            @testset "Failing test" begin
+            @testset "Test set with failing test" begin
                 @test 1 == 2
-            end
-            @testset "Passing test" begin
                 @test 1 == 1
+            end
+            @testset "Test set with no failing tests" begin
+                @test 2 == 2
+                @test 3 == 3
             end
         end
     catch err
-        if err isa TestSetExtensions.ExtendedTestSetException
-            if err.msg == "FallbackTestSetException occurred"
-                fail_fast_succeeded = true
-            end
-        end
     end
 
-    @test fail_fast_succeeded
+    @test err isa TestSetExtensions.ExtendedTestSetException
+    @test err.msg == "FallbackTestSetException occurred"
+
+    # Nested DefaultTestSet
+    err = nothing
+    try
+        default_test_set = Test.DefaultTestSet
+        @testset ets_fallback "top-level tests" begin
+            @testset default_test_set "Failing test" begin
+                @test 1 == 2
+                @test 1 == 1
+            end
+            @testset default_test_set "No failing tests" begin
+                @test 2 == 2
+                @test 3 == 3
+            end
+        end
+    catch err
+    end
+
+    @test err isa Test.FallbackTestSetException
+
+    try
+        default_test_set = Test.DefaultTestSet
+        @testset ets_fallback "top-level tests" begin
+            @testset ets_fallback "2nd-level tests" begin
+                @testset default_test_set "Failing test" begin
+                    @test 1 == 2
+                    @test 1 == 1
+                end
+                @testset default_test_set "No failing tests" begin
+                    @test 2 == 2
+                    @test 3 == 3
+                end
+            end
+        end
+    catch err
+    end
+
+    @test err isa TestSetExtensions.ExtendedTestSetException
+    @test err.msg == "FallbackTestSetException occurred"
 end

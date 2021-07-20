@@ -141,6 +141,22 @@ end
 
 Test.record(ts::ExtendedTestSet{T}, res) where {T} = Test.record(ts.wrapped, res)
 
+# When recording DefaultTestSet results to an ExtendedTestSet{FallbackTestSet},
+# throw an exception if there are any failures or errors in the DefaultTestSet.
+#
+# Note: this method is only needed for backward compatibility with Julia<=1.3
+function Test.record(ts::ExtendedTestSet{FallbackTestSet}, res::DefaultTestSet)
+    # Check for failures and errors
+    passes, fails, errors, broken, c_passes, c_fails, c_errors, c_broken =
+        Test.get_test_counts(res)
+    if (fails > 0) || (errors > 0)
+        throw(ExtendedTestSetException("Failure or error occurred in DefaultTestSet nested within FallbackTestSet."))
+    end
+
+    return res
+end
+
+
 function Test.finish(ts::ExtendedTestSet{T}) where {T}
     Test.get_testset_depth() == 0 && print("\n\n")
     Test.finish(ts.wrapped)
