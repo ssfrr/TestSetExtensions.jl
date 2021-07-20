@@ -109,10 +109,18 @@ end
     @test err isa TestSetExtensions.ExtendedTestSetException
     @test err.msg == "FallbackTestSetException occurred"
 
-    # Nested DefaultTestSet
+    # --- Nested DefaultTestSet tests
+    #
+    # * Tests Test.record(ExtendedTestSet{FallbackTestSet}, DefaultTestSet) needed for
+    #   backward compatibility with Julia<=1.3.
+
+    default_test_set = Test.DefaultTestSet
+
+    # ------ DefaultTest nested under single ExtendedTestSet{FallbackTestSet} test set
+
+    # With failing tests
     err = nothing
     try
-        default_test_set = Test.DefaultTestSet
         @testset ets_fallback "top-level tests" begin
             @testset default_test_set "Failing test" begin
                 @test 1 == 2
@@ -128,8 +136,24 @@ end
 
     @test err isa Test.FallbackTestSetException
 
+    # With no failing tests
+    err = nothing
     try
-        default_test_set = Test.DefaultTestSet
+        @testset ets_fallback "top-level tests" begin
+            @testset default_test_set "No failing tests" begin
+                @test 2 == 2
+                @test 3 == 3
+            end
+        end
+    catch err
+    end
+
+    @test isnothing(err)
+
+    # ------ DefaultTest nested under multiple ExtendedTestSet{FallbackTestSet} test sets
+
+    # With failing tests
+    try
         @testset ets_fallback "top-level tests" begin
             @testset ets_fallback "2nd-level tests" begin
                 @testset default_test_set "Failing test" begin
@@ -147,4 +171,20 @@ end
 
     @test err isa TestSetExtensions.ExtendedTestSetException
     @test err.msg == "FallbackTestSetException occurred"
+
+    # With no failing tests
+    err = nothing
+    try
+        @testset ets_fallback "top-level tests" begin
+            @testset ets_fallback "2nd-level tests" begin
+                @testset default_test_set "No failing tests" begin
+                    @test 2 == 2
+                    @test 3 == 3
+                end
+            end
+        end
+    catch err
+    end
+
+    @test isnothing(err)
 end
