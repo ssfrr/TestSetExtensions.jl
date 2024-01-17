@@ -39,7 +39,7 @@ try
 catch
 end
 
-@testset ExtendedTestSet "TextSetExtensions Tests" begin
+@testset ExtendedTestSet "TestSetExtensions Tests" begin
     @testset "check output dots" begin
         @test split(output, '\n')[1] == "...."
     end
@@ -71,4 +71,123 @@ end
     @testset "more than one arg to @includetests is an error" begin
         @test_throws LoadError macroexpand(@__MODULE__, :(@includetests one two))
     end
+end
+
+@info "ExtendedTestSet{FallbackTestSet} test sets should exit when the first test fails"
+@testset "ExtendedTestSet{FallbackTestSet} Tests" begin
+    ets_fallback = ExtendedTestSet{Test.FallbackTestSet}
+
+    # Single-level test set
+    err = nothing
+    try
+        @testset ets_fallback "top-level tests" begin
+            @test 1 == 2
+            @test 1 == 1
+        end
+    catch err
+    end
+
+    @test err isa TestSetExtensions.ExtendedTestSetException
+    @test err.msg == "FallbackTestSetException occurred"
+
+    # Nested test sets
+    err = nothing
+    try
+        @testset ets_fallback "top-level tests" begin
+            @testset "Test set with failing test" begin
+                @test 1 == 2
+                @test 1 == 1
+            end
+            @testset "Test set with no failing tests" begin
+                @test 2 == 2
+                @test 3 == 3
+            end
+        end
+    catch err
+    end
+
+    @test err isa TestSetExtensions.ExtendedTestSetException
+    @test err.msg == "FallbackTestSetException occurred"
+
+    # --- Nested DefaultTestSet tests
+    #
+    # * Tests Test.record(ExtendedTestSet{FallbackTestSet}, DefaultTestSet) needed for
+    #   backward compatibility with Julia<=1.3.
+
+    default_test_set = Test.DefaultTestSet
+
+    # ------ DefaultTest nested under single ExtendedTestSet{FallbackTestSet} test set
+
+    # With failing tests
+    err = nothing
+    try
+        @testset ets_fallback "top-level tests" begin
+            @testset default_test_set "Failing test" begin
+                @test 1 == 2
+                @test 1 == 1
+            end
+            @testset default_test_set "No failing tests" begin
+                @test 2 == 2
+                @test 3 == 3
+            end
+        end
+    catch err
+    end
+
+    @test err isa Test.FallbackTestSetException
+
+    # With no failing tests
+    err = nothing
+    try
+        @testset ets_fallback "top-level tests" begin
+            @testset default_test_set "No failing tests" begin
+                @test 2 == 2
+                @test 3 == 3
+            end
+        end
+    catch err
+    end
+
+    @test err === nothing  # Note: isnothing() is not used for backward compatibility
+                           # with Julia 1.0
+
+    # ------ DefaultTest nested under multiple ExtendedTestSet{FallbackTestSet} test sets
+
+    # With failing tests
+    try
+        @testset ets_fallback "top-level tests" begin
+            @testset ets_fallback "2nd-level tests" begin
+                @testset default_test_set "Failing test" begin
+                    @test 1 == 2
+                    @test 1 == 1
+                end
+                @testset default_test_set "No failing tests" begin
+                    @test 2 == 2
+                    @test 3 == 3
+                end
+            end
+        end
+    catch err
+    end
+
+    @test err isa TestSetExtensions.ExtendedTestSetException
+    @test err.msg == "FallbackTestSetException occurred"
+
+    # With no failing tests
+    err = nothing
+    try
+        @testset ets_fallback "top-level tests" begin
+            @testset ets_fallback "2nd-level tests" begin
+                @testset default_test_set "No failing tests" begin
+                    @test 2 == 2
+                    @test 3 == 3
+                end
+            end
+        end
+    catch err
+    end
+
+    @test err === nothing  # Note: isnothing() is not used for backward compatibility
+                           # with Julia 1.0
+
 end
