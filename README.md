@@ -1,7 +1,7 @@
 # TestSetExtensions
 
-[![CI](https://github.com/palday/TestSetExtensions.jl/actions/workflows/CI.yml/badge.svg)](https://github.com/palday/TestSetExtensions.jl/actions/workflows/CI.yml)
-[![codecov](https://codecov.io/gh/palday/TestSetExtensions.jl/graph/badge.svg?token=OFJ613ESY8)](https://codecov.io/gh/palday/TestSetExtensions.jl)
+[![CI](https://github.com/ssfrr/TestSetExtensions.jl/actions/workflows/CI.yml/badge.svg)](https://github.com/ssfrr/TestSetExtensions.jl/actions/workflows/CI.yml)
+[![codecov](https://codecov.io/gh/ssfrr/TestSetExtensions.jl/graph/badge.svg?token=OFJ613ESY8)](https://codecov.io/gh/ssfrr/TestSetExtensions.jl)
 
 ![TestSetExtensions example gif](http://ssfrr.github.io/TestSetExtensions.jl/ExtendedTestSet.gif)
 
