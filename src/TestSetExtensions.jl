@@ -63,7 +63,11 @@ function Test.record(ts::ExtendedTestSet{T}, res::Fail) where {T}
             print(res)
         end
 
-        Base.show_backtrace(stdout, Test.scrub_backtrace(backtrace()))
+        @static if VERSION < v"1.10"
+            Base.show_backtrace(stdout, Test.scrub_backtrace(backtrace()))
+        else
+            Base.show_backtrace(stdout, Test.scrub_backtrace(backtrace(), ts.wrapped.file, Test.extract_file(res.source)))
+        end
         # show_backtrace doesn't print a trailing newline
         println("\n=====================================================")
     end
