@@ -3,45 +3,7 @@ module TestSetExtensions
 using Distributed, Test, DeepDiffs
 using Test: AbstractTestSet, DefaultTestSet
 using Test: Result, Fail, Error, Pass
-export ExtendedTestSet, @includetests
-
-"""
-Includes the given test files, given as a list without their ".jl" extensions.
-If none are given it will scan the directory of the calling file and include all
-the julia files.
-"""
-macro includetests(testarg...)
-    if length(testarg) == 0
-        tests = []
-    elseif length(testarg) == 1
-        tests = testarg[1]
-    else
-        error("@includetests takes zero or one argument")
-    end
-
-    rootfile = "$(__source__.file)"
-    mod = __module__
-
-    quote
-        tests = $tests
-        rootfile = $rootfile
-
-        if length(tests) == 0
-            tests = readdir(dirname(rootfile))
-            tests = filter(f->endswith(f, ".jl") && f!= basename(rootfile), tests)
-        else
-            tests = map(f->string(f, ".jl"), tests)
-        end
-
-        println();
-
-        for test in tests
-            print(splitext(test)[1], ": ")
-            Base.include($mod, test)
-            println()
-        end
-    end
-end
+export ExtendedTestSet
 
 struct ExtendedTestSet{T<:AbstractTestSet} <: AbstractTestSet
     wrapped::T
@@ -86,7 +48,7 @@ function Test.record(ts::ExtendedTestSet{T}, res::Fail) where {T}
                         printstyled("Test Failed\n"; bold = true, color = Base.error_color())
                         println("  Expression: ", res.orig_expr)
                         printstyled("\nDiff:\n"; color = Base.info_color())
-                        display(dd)
+                        show(dd)
                         println()
                     else
                         # fallback to the default printing if we don't have a pretty diff

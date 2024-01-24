@@ -1,8 +1,7 @@
 # TestSetExtensions
 
-[![Build Status](https://travis-ci.org/ssfrr/TestSetExtensions.jl.svg?branch=master)](https://travis-ci.org/ssfrr/TestSetExtensions.jl)
-[![Build status](https://ci.appveyor.com/api/projects/status/79m2ru7o3upt86ds/branch/master?svg=true)](https://ci.appveyor.com/project/ssfrr/testsetextensions-jl/branch/master)
-[![codecov.io](http://codecov.io/github/ssfrr/TestSetExtensions.jl/coverage.svg?branch=master)](http://codecov.io/github/ssfrr/TestSetExtensions.jl?branch=master)
+[![CI](https://github.com/palday/TestSetExtensions.jl/actions/workflows/CI.yml/badge.svg)](https://github.com/palday/TestSetExtensions.jl/actions/workflows/CI.yml)
+[![codecov](https://codecov.io/gh/palday/TestSetExtensions.jl/graph/badge.svg?token=OFJ613ESY8)](https://codecov.io/gh/palday/TestSetExtensions.jl)
 
 ![TestSetExtensions example gif](http://ssfrr.github.io/TestSetExtensions.jl/ExtendedTestSet.gif)
 
@@ -31,27 +30,3 @@ end
 ### Diff output example
 
 ![After diff output](http://ssfrr.github.io/TestSetExtensions.jl/diff_after.png)
-
-## `@includetests`
-TestSetExtensions also provides a `@includetests` macro that makes it easy to selectively run your tests, for cases when your full test suite is large and you only need to run a subset of your tests to test a feature you're working on. The macro takes a list of test files, so you can pass it `ARGS` to allow the user to specify which tests to run from the command line.
-
-```julia
-using Compat.Test
-using TestSetExtensions
-
-@testset "All the tests" begin
-    @includetests ARGS
-end
-```
-
-If the user doesn't provide any command-line arguments, this will look for any `*.jl` files in the same directory as the running file (usually `runtests.jl`) and `include` them. The user can also specify a list of test files:
-
-```
-$ julia test/runtests.jl footests bartests
-```
-
-Which will run `footests.jl` and `bartests.jl`.
-
-`@includetests` will print out each test module name as it goes (here in combination with `ExtendedTestSet`):
-
-![includetests output](http://ssfrr.github.io/TestSetExtensions.jl/includetests.png)

@@ -1,7 +1,7 @@
 name = "TestSetExtensions"
 uuid = "98d24dd4-01ad-11ea-1b02-c9a08f80db04"
-authors = []
-version = "2.0.0"
+authors = ["Spencer Russell", "Phillip Alday"]
+version = "3.0.0"
 
 [deps]
 DeepDiffs = "ab62b9b5-e342-54a8-a765-a90f495de1a6"
@@ -9,12 +9,18 @@ Distributed = "8ba89e20-285c-5b6f-9357-94700520ee1b"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [compat]
-julia = "1"
 DeepDiffs = "1"
+Logging = "<0.0.1, 1"
+MetaTesting = "0.1"
+Suppressor = "0.2"
+Test = "<0.0.1, 1"
+julia = "1.6"
 
 [extras]
+Aqua = "4c88cf16-eb10-579e-8560-4a9242c79595"
 Logging = "56ddb016-857b-54e1-b83d-db4d58db5568"
+MetaTesting = "9e32d19f-1e4f-477a-8631-b16c78aa0f56"
 Suppressor = "fd094767-a336-5f1f-9728-57cf17d0bbfb"
 
 [targets]
-test = ["Suppressor", "Logging"]
+test = ["Suppressor", "Logging", "MetaTesting"]
