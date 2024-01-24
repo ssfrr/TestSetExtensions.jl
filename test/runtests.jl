@@ -1,5 +1,6 @@
 using Test
 using TestSetExtensions
+using Aqua
 using MetaTesting
 using Logging
 using Suppressor
@@ -7,6 +8,9 @@ using Suppressor
 using MetaTesting: EncasedTestSet
 
 @testset ExtendedTestSet "TextSetExtensions Tests" begin
+    @testset "Aqua" begin
+        Aqua.test_all(TestSetExtensions)
+    end
     @testset "progress" begin
         include("progress.jl")
     end
