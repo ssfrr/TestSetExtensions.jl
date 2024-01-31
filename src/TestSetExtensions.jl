@@ -40,9 +40,14 @@ function Test.record(ts::ExtendedTestSet{T}, res::Fail) where {T}
                     elseif test_expr.args[2].head === :call && test_expr.args[3].head === :call &&
                             test_expr.args[2].args[1].head === :curly && test_expr.args[3].args[1].head === :curly
                         deepdiff(Base.eval(test_expr.args[2].args), Base.eval(test_expr.args[3].args))
+                    elseif test_expr.args[2].head === :vcat && test_expr.args[3].head === :vcat
+                        # matrices
+                        deepdiff(test_expr.args[2].args, test_expr.args[3].args)
                     end
-
-                    if ! isa(dd, DeepDiffs.SimpleDiff)
+                  
+                    # note there is an implicit `else nothing` branch to the if-block above
+                    if !isa(dd, DeepDiffs.SimpleDiff) && dd !== nothing
+                        # SimpleDiff has no pretty printing
                         # The test was an comparison between things we can diff,
                         # so display the diff
                         printstyled("Test Failed\n"; bold = true, color = Base.error_color())

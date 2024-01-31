@@ -2,14 +2,15 @@
     global output
     output = @capture_out begin
         try
-            @testset ExtendedTestSet "matrices" begin
-                @test [1 2; 3 4] == [1 4; 3 4]
+            @testset ExtendedTestSet "higher dimensional arrays" begin
+                @test [1 2; 3 4; 5 6] == [1 4; 3 4; 5 6]
              end
         catch
         end
     end
 end
-@test contains(output, "Diff:\nnothing")
+# XXX this should be updated when DeepDiffs.jl uses semmicolon instead of comma for matrix diff
+@test contains(output, "Diff:\n[(-)1 2, (+)1 4, 3 4, 5 6]")
 
 @testset EncasedTestSet "wrapper" begin
     global output
