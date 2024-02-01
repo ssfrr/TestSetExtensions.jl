@@ -3,45 +3,7 @@ module TestSetExtensions
 using Distributed, Test, DeepDiffs
 using Test: AbstractTestSet, DefaultTestSet
 using Test: Result, Fail, Error, Pass
-export ExtendedTestSet, @includetests
-
-"""
-Includes the given test files, given as a list without their ".jl" extensions.
-If none are given it will scan the directory of the calling file and include all
-the julia files.
-"""
-macro includetests(testarg...)
-    if length(testarg) == 0
-        tests = []
-    elseif length(testarg) == 1
-        tests = testarg[1]
-    else
-        error("@includetests takes zero or one argument")
-    end
-
-    rootfile = "$(__source__.file)"
-    mod = __module__
-
-    quote
-        tests = $tests
-        rootfile = $rootfile
-
-        if length(tests) == 0
-            tests = readdir(dirname(rootfile))
-            tests = filter(f->endswith(f, ".jl") && f!= basename(rootfile), tests)
-        else
-            tests = map(f->string(f, ".jl"), tests)
-        end
-
-        println();
-
-        for test in tests
-            print(splitext(test)[1], ": ")
-            Base.include($mod, test)
-            println()
-        end
-    end
-end
+export ExtendedTestSet
 
 struct ExtendedTestSet{T<:AbstractTestSet} <: AbstractTestSet
     wrapped::T
@@ -78,15 +40,20 @@ function Test.record(ts::ExtendedTestSet{T}, res::Fail) where {T}
                     elseif test_expr.args[2].head === :call && test_expr.args[3].head === :call &&
                             test_expr.args[2].args[1].head === :curly && test_expr.args[3].args[1].head === :curly
                         deepdiff(Base.eval(test_expr.args[2].args), Base.eval(test_expr.args[3].args))
+                    elseif test_expr.args[2].head === :vcat && test_expr.args[3].head === :vcat
+                        # matrices
+                        deepdiff(test_expr.args[2].args, test_expr.args[3].args)
                     end
-
-                    if ! isa(dd, DeepDiffs.SimpleDiff)
+                  
+                    # note there is an implicit `else nothing` branch to the if-block above
+                    if !isa(dd, DeepDiffs.SimpleDiff) && dd !== nothing
+                        # SimpleDiff has no pretty printing
                         # The test was an comparison between things we can diff,
                         # so display the diff
                         printstyled("Test Failed\n"; bold = true, color = Base.error_color())
                         println("  Expression: ", res.orig_expr)
                         printstyled("\nDiff:\n"; color = Base.info_color())
-                        display(dd)
+                        show(dd)
                         println()
                     else
                         # fallback to the default printing if we don't have a pretty diff
@@ -101,7 +68,11 @@ function Test.record(ts::ExtendedTestSet{T}, res::Fail) where {T}
             print(res)
         end
 
-        Base.show_backtrace(stdout, Test.scrub_backtrace(backtrace()))
+        @static if VERSION < v"1.10"
+            Base.show_backtrace(stdout, Test.scrub_backtrace(backtrace()))
+        else
+            Base.show_backtrace(stdout, Test.scrub_backtrace(backtrace(), ts.wrapped.file, Test.extract_file(res.source)))
+        end
         # show_backtrace doesn't print a trailing newline
         println("\n=====================================================")
     end
