@@ -19,6 +19,17 @@ function ExtendedTestSet(desc; wrap=DefaultTestSet)
     ExtendedTestSet{wrap}(desc)
 end
 
+function isVector(e)
+    if e.head === :vect
+        return true
+    end
+    #Float32 or Int32 arrays get here as Ref's to Vector
+    if e.head === :ref && isa(e.args, Vector)
+        return true
+    end
+    return false
+end
+
 function Test.record(ts::ExtendedTestSet{T}, res::Fail) where {T}
     if Distributed.myid() == 1
         println("\n=====================================================")
@@ -31,11 +42,10 @@ function Test.record(ts::ExtendedTestSet{T}, res::Fail) where {T}
                 elseif isa(res.data, String)
                     Meta.parse(res.data)
                 end
-
                 if test_expr.head === :call && test_expr.args[1] === Symbol("==")
                     dd = if isa(test_expr.args[2], String) && isa(test_expr.args[3], String)
                         deepdiff(test_expr.args[2], test_expr.args[3])
-                    elseif test_expr.args[2].head === :vect && test_expr.args[3].head === :vect
+                    elseif isVector(test_expr.args[2]) && isVector(test_expr.args[3])
                         deepdiff(test_expr.args[2].args, test_expr.args[3].args)
                     elseif test_expr.args[2].head === :call && test_expr.args[3].head === :call &&
                             test_expr.args[2].args[1].head === :curly && test_expr.args[3].args[1].head === :curly
