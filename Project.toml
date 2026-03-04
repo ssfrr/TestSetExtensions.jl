@@ -1,7 +1,7 @@
 name = "TestSetExtensions"
 uuid = "98d24dd4-01ad-11ea-1b02-c9a08f80db04"
 authors = ["Spencer Russell", "Phillip Alday"]
-version = "3.0.0"
+version = "3.1.0"
 
 [deps]
 DeepDiffs = "ab62b9b5-e342-54a8-a765-a90f495de1a6"

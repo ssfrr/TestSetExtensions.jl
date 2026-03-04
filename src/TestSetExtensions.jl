@@ -11,6 +11,20 @@ struct ExtendedTestSet{T<:AbstractTestSet} <: AbstractTestSet
     ExtendedTestSet{T}(desc) where {T} = new(T(desc))
 end
 
+function Base.getproperty(t::T, s::Symbol) where {T <: ExtendedTestSet}
+    if s ∈ fieldnames(T)
+        return getfield(t, s)
+    else
+        return getproperty(t.wrapped, s)
+    end
+end
+
+function Base.setproperty!(t::ExtendedTestSet, s::Symbol)
+    # ExtendedTestSet is immutable and has no properties you can set
+    # so we can assume delegation
+    return setproperty!(t.wrapped, s)
+end
+
 struct FailDiff <: Result
     result::Fail
 end
