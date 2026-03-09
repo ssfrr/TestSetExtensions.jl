@@ -3,3 +3,4 @@
 *.jl.mem
 coverage
 Manifest.toml
+Manifest-v*.toml

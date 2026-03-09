@@ -7,8 +7,26 @@ export ExtendedTestSet
 
 struct ExtendedTestSet{T<:AbstractTestSet} <: AbstractTestSet
     wrapped::T
+    # for compatibility with TestReports
+    testset_properties::Vector{Pair{String, Any}}
+    test_properties::Vector{Pair{String, Any}}
+    ExtendedTestSet{T}(desc) where {T} = new(T(desc), Pair{String, Any}[], Pair{String, Any}[])
+end
 
-    ExtendedTestSet{T}(desc) where {T} = new(T(desc))
+function Base.getproperty(t::T, s::Symbol) where {T <: ExtendedTestSet}
+    @debug "get $s"
+    if s ∈ fieldnames(T)
+        return getfield(t, s)
+    else
+        return getproperty(t.wrapped, s)
+    end
+end
+
+function Base.setproperty!(t::T, s::Symbol, v) where {T <: ExtendedTestSet}
+    @debug "set $s"
+    # ExtendedTestSet is immutable and has no properties you can set
+    # so we can assume delegation
+    return setproperty!(t.wrapped, s, v)
 end
 
 struct FailDiff <: Result
@@ -44,7 +62,7 @@ function Test.record(ts::ExtendedTestSet{T}, res::Fail) where {T}
                         # matrices
                         deepdiff(test_expr.args[2].args, test_expr.args[3].args)
                     end
-                  
+
                     # note there is an implicit `else nothing` branch to the if-block above
                     if !isa(dd, DeepDiffs.SimpleDiff) && dd !== nothing
                         # SimpleDiff has no pretty printing
@@ -68,35 +86,45 @@ function Test.record(ts::ExtendedTestSet{T}, res::Fail) where {T}
             print(res)
         end
 
-        @static if VERSION < v"1.10"
-            Base.show_backtrace(stdout, Test.scrub_backtrace(backtrace()))
-        else
-            Base.show_backtrace(stdout, Test.scrub_backtrace(backtrace(), ts.wrapped.file, Test.extract_file(res.source)))
-        end
+        Base.show_backtrace(stdout, Test.scrub_backtrace(backtrace(), ts.wrapped.file, Test.extract_file(res.source)))
         # show_backtrace doesn't print a trailing newline
-        println("\n=====================================================")
+        println()
+        println("=====================================================")
     end
     push!(ts.wrapped.results, res)
     res, backtrace()
 end
 
 function Test.record(ts::ExtendedTestSet{T}, res::Error) where {T}
-    println("\n=====================================================")
+    println()
+    println("=====================================================")
     Test.record(ts.wrapped, res)
-    print("=====================================================\n")
+    println("=====================================================")
+    return res
 end
 
 function Test.record(ts::ExtendedTestSet{T}, res::Pass) where {T}
     printstyled("."; color = :green)
     Test.record(ts.wrapped, res)
-    res
+    return res
 end
 
-Test.record(ts::ExtendedTestSet{T}, res) where {T} = Test.record(ts.wrapped, res)
+function Test.record(ts::ExtendedTestSet{T}, res) where {T}
+    Test.record(ts.wrapped, res)
+    return res
+end
 
 function Test.finish(ts::ExtendedTestSet{T}) where {T}
     Test.get_testset_depth() == 0 && print("\n\n")
+    if Test.get_testset_depth() != 0
+        # Attach this test set to the parent test set
+        parent_ts = Test.get_testset()
+        Test.record(parent_ts, ts)
+        return ts
+    end
+
     Test.finish(ts.wrapped)
+    return ts
 end
 
 end # module
