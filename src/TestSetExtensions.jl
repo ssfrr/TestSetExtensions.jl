@@ -7,7 +7,6 @@ export ExtendedTestSet
 
 struct ExtendedTestSet{T<:AbstractTestSet} <: AbstractTestSet
     wrapped::T
-    # ExtendedTestSet{T}(desc) where {T} = new(T(desc))
     # for compatibility with TestReports
     testset_properties::Vector{Pair{String, Any}}
     test_properties::Vector{Pair{String, Any}}
