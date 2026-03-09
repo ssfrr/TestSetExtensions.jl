@@ -15,12 +15,5 @@ function TestReports.record_test_property!(ts::ExtendedTestSet, name::AbstractSt
     @debug "" ts.test_properties
     return ts
 end
-# using Test: DefaultTestSet, AbstractTestSet
-# const DefaultExtendedTestSet = ExtendedTestSet{DefaultTestSet}
-# const ReportTestSetOrResult = Union{ReportingResult, Result, AbstractTestSet, ReportingTestSet}
-# function TestReports.add_to_ts_default!(ts_default::DefaultExtendedTestSet, x::ReportTestSetOrResult)
-#     @debug "add to default"
-#     TestReports.add_to_ts_default!(ts_default.wrapped, x)
-# end
 
 end
