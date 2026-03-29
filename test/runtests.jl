@@ -16,6 +16,9 @@ using MetaTesting: EncasedTestSet
     @testset "progress" begin
         include("progress.jl")
     end
+    @testset "display.jl" begin
+        include("display.jl")
+    end
     @testset "diff" begin
         include("diff.jl")
     end

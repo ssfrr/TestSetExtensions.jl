@@ -114,7 +114,7 @@ function Test.record(ts::ExtendedTestSet{T}, res) where {T}
     return res
 end
 
-function Test.finish(ts::ExtendedTestSet{T}) where {T}
+function Test.finish(ts::ExtendedTestSet{T}; print_results::Bool=Test.TESTSET_PRINT_ENABLE[]) where {T}
     Test.get_testset_depth() == 0 && print("\n\n")
     if Test.get_testset_depth() != 0
         # Attach this test set to the parent test set
@@ -123,8 +123,15 @@ function Test.finish(ts::ExtendedTestSet{T}) where {T}
         return ts
     end
 
-    Test.finish(ts.wrapped)
+    Test.finish(ts.wrapped; print_results)
     return ts
+end
+
+function Test.print_test_results(ts::ExtendedTestSet{T}, args...) where {T}
+    return Test.print_test_results(ts.wrapped, args...)
+end
+function Test.get_test_counts(ts::ExtendedTestSet{T}) where {T} 
+    return Test.get_test_counts(ts.wrapped)
 end
 
 end # module
