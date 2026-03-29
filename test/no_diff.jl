@@ -9,7 +9,7 @@
         end
     end
 end
-# XXX this should be updated when DeepDiffs.jl uses semmicolon instead of comma for matrix diff
+# XXX this should be updated when DeepDiffs.jl uses semicolon instead of comma for matrix diff
 @test contains(output, "Diff:\n[(-)1 2, (+)1 4, 3 4, 5 6]")
 
 @testset EncasedTestSet "wrapper" begin
