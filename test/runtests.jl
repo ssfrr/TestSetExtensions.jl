@@ -3,6 +3,7 @@ using TestSetExtensions
 using Aqua
 using MetaTesting
 using Logging
+using ReTestItems
 using Suppressor
 using TestReports
 using EzXML
@@ -40,4 +41,9 @@ using MetaTesting: EncasedTestSet
         xml = report(ts)
         @test length(collect(eachnode(root(xml)))) == 3
     end
+
+    # runtests("retestitems_test.jl"; validate_paths=true)
+    # this will only run things ending `_test.jl`
+    runtests(TestSetExtensions)
+
 end
