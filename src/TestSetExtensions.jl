@@ -152,9 +152,15 @@ function Test.finish(ts::ExtendedTestSet{T}; print_results::Bool=Test.TESTSET_PR
 end
 
 function Test.print_test_results(ts::ExtendedTestSet{T}, args...) where {T}
+    @static if !isdefined(Test, :TestCounts)
+        _flatten_for_counting!(ts.wrapped)
+    end
     return Test.print_test_results(ts.wrapped, args...)
 end
-function Test.get_test_counts(ts::ExtendedTestSet{T}) where {T} 
+function Test.get_test_counts(ts::ExtendedTestSet{T}) where {T}
+    @static if !isdefined(Test, :TestCounts)
+        _flatten_for_counting!(ts.wrapped)
+    end
     return Test.get_test_counts(ts.wrapped)
 end
 
