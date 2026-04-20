@@ -114,6 +114,27 @@ function Test.record(ts::ExtendedTestSet{T}, res) where {T}
     return res
 end
 
+# On Julia < 1.12, get_test_counts(::DefaultTestSet) only processes isa(t, DefaultTestSet)
+# children. Plain @testset nested inside an ExtendedTestSet inherits the parent's type,
+# creating another ExtendedTestSet, which is then silently skipped by get_test_counts.
+# This helper replaces ExtendedTestSet children with their wrapped DefaultTestSets just
+# before the root finish, making counts work correctly. It runs after all testset body
+# code (including TestReports assertions) has already completed.
+@static if !isdefined(Test, :TestCounts)
+    function _flatten_for_counting!(ts::DefaultTestSet)
+        for i in eachindex(ts.results)
+            t = ts.results[i]
+            if t isa ExtendedTestSet
+                isnothing(t.wrapped.time_end) && (t.wrapped.time_end = time())
+                ts.results[i] = t.wrapped
+                _flatten_for_counting!(t.wrapped)
+            elseif t isa DefaultTestSet
+                _flatten_for_counting!(t)
+            end
+        end
+    end
+end
+
 function Test.finish(ts::ExtendedTestSet{T}; print_results::Bool=Test.TESTSET_PRINT_ENABLE[]) where {T}
     Test.get_testset_depth() == 0 && print("\n\n")
     if Test.get_testset_depth() != 0
@@ -123,6 +144,9 @@ function Test.finish(ts::ExtendedTestSet{T}; print_results::Bool=Test.TESTSET_PR
         return ts
     end
 
+    @static if !isdefined(Test, :TestCounts)
+        _flatten_for_counting!(ts.wrapped)
+    end
     Test.finish(ts.wrapped; print_results)
     return ts
 end
