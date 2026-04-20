@@ -19,7 +19,7 @@ end
         nested_tests()
     end
 
-    dts = @testset Test.DefaultTestSet "testset" begin
+    dts = @testset DefaultTestSet "testset" begin
         nested_tests()
     end
 

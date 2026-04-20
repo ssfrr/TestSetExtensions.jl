@@ -1,4 +1,5 @@
 using Test
+using Test: DefaultTestSet
 using TestSetExtensions
 using Aqua
 using MetaTesting
