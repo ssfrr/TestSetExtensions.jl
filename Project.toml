@@ -1,6 +1,6 @@
 name = "TestSetExtensions"
 uuid = "98d24dd4-01ad-11ea-1b02-c9a08f80db04"
-version = "4.0.2"
+version = "4.0.3"
 authors = ["Spencer Russell", "Phillip Alday"]
 
 [deps]

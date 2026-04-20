@@ -5,12 +5,13 @@ using Test: AbstractTestSet, DefaultTestSet
 using Test: Result, Fail, Error, Pass
 export ExtendedTestSet
 
-struct ExtendedTestSet{T<:AbstractTestSet} <: AbstractTestSet
-    wrapped::T
+mutable struct ExtendedTestSet{T<:AbstractTestSet} <: AbstractTestSet
+    const wrapped::T
+    description::String
     # for compatibility with TestReports
-    testset_properties::Vector{Pair{String, Any}}
-    test_properties::Vector{Pair{String, Any}}
-    ExtendedTestSet{T}(desc) where {T} = new(T(desc), Pair{String, Any}[], Pair{String, Any}[])
+    const testset_properties::Vector{Pair{String, Any}}
+    const test_properties::Vector{Pair{String, Any}}
+    ExtendedTestSet{T}(desc) where {T} = new(T(desc), desc, Pair{String, Any}[], Pair{String, Any}[])
 end
 
 function Base.getproperty(t::T, s::Symbol) where {T <: ExtendedTestSet}
@@ -24,9 +25,11 @@ end
 
 function Base.setproperty!(t::T, s::Symbol, v) where {T <: ExtendedTestSet}
     @debug "set $s"
-    # ExtendedTestSet is immutable and has no properties you can set
-    # so we can assume delegation
-    return setproperty!(t.wrapped, s, v)
+    if s ∈ fieldnames(T)
+        return setfield!(t, s, v)
+    else
+        return setproperty!(t.wrapped, s, v)
+    end
 end
 
 struct FailDiff <: Result
