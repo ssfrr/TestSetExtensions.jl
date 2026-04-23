@@ -24,7 +24,7 @@ jobs:
       matrix:
         version:
           - '1'
-          - 'min'
+          - 'min-patch'
           - 'pre'
         os:
           - ubuntu-latest
